@@ -1299,6 +1299,8 @@ let menu = (function () {
   const shapeChips = document.getElementById('shapeChips');
   const piecesChips = document.getElementById('piecesChips');
 
+  // Defaults (match the hidden <select id="shape"> in index.html)
+  let selectedShapeKey = 'classic';
   let selectedPieces = 100;
 
   function setActive(container, attr, value) {
@@ -1309,7 +1311,11 @@ let menu = (function () {
   }
 
   // Defaults
+  setActive(shapeChips, 'data-shape', selectedShapeKey);
   setActive(piecesChips, 'data-pieces', selectedPieces);
+
+  // Ensure the engine reads the correct default shape
+  if (shapeSelect) shapeSelect.value = '1';
 
   if (shapeChips && shapeSelect) {
     const map = { classic: '1', triangle: '2', round: '3', straight: '4' };
@@ -1317,8 +1323,11 @@ let menu = (function () {
       const btn = e.target.closest('.chip');
       if (!btn) return;
       const key = btn.dataset.shape;
-      if (map[key]) shapeSelect.value = map[key];
-      setActive(shapeChips, 'data-shape', key);
+      if (map[key]) {
+        selectedShapeKey = key;
+        shapeSelect.value = map[key];
+        setActive(shapeChips, 'data-shape', selectedShapeKey);
+      }
     });
   }
 
