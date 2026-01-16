@@ -123,70 +123,47 @@ body {
   gap: 10px;
   justify-content: center;
 }
-.centerUI{
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none; /* chặn click ngoài panel */
+/* =========================
+   Hover & Active for Shape / Pieces buttons
+   ========================= */
+
+/* trạng thái mặc định */
+.chip{
+  transition: 
+    background-color .18s ease,
+    color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    transform .12s ease;
 }
 
-.panel{
-  pointer-events: auto;
-  width: min(92vw, 520px);
-  background: #fff;
-  border-radius: 16px;
-  padding: 18px 16px;
-  box-shadow: 0 12px 40px rgba(0,0,0,.25);
-  text-align: center;
+/* hover */
+.chip:hover{
+  background: #ff750b;   /* màu cam chủ đạo */
+  color: #fff;
+  border-color: #ff750b;
+  box-shadow: 0 8px 18px rgba(255,117,11,.35);
+  transform: translateY(-1px);
 }
 
-.hint{ margin: 10px 0 0; font-size: 13px; opacity: .75; }
-
-.btn{
-  display: inline-block;
-  padding: 10px 14px;
-  border-radius: 12px;
+/* đang được chọn */
+.chip.active{
   background: #ff750b;
   color: #fff;
-  border: 0;
-  cursor: pointer;
-  user-select: none;
+  border-color: #ff750b;
+  box-shadow: 0 10px 24px rgba(255,117,11,.45);
 }
 
-.btn.ghost{
-  background: transparent;
-  color: #222;
-  border: 1px solid rgba(0,0,0,.15);
+/* hover trên item đang active (đậm hơn nhẹ) */
+.chip.active:hover{
+  background: #ff5e00;
+  border-color: #ff5e00;
 }
 
-.row{ margin-top: 14px; text-align: left; }
-.label{ font-weight: 600; margin-bottom: 8px; }
-
-.chips{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.chip{
-  border: 1px solid rgba(0,0,0,.18);
-  background: #fff;
-  padding: 8px 10px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.chip.active{
-  border-color: rgba(0,0,0,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-}
-
-.actions{
-  margin-top: 16px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+/* mobile: bỏ hiệu ứng nâng */
+@media (hover: none){
+  .chip:hover{
+    transform: none;
+    box-shadow: none;
+  }
 }
