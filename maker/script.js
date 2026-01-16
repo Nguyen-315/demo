@@ -934,36 +934,50 @@ class Puzzle {
 let loadFile;
 {
 
-  let options;
+  // If HTML provides an input#imgUpload (center UI), we use it.
+  // Otherwise we fall back to an internal hidden input.
 
-  let elFile = document.createElement('input');
+  let elFile = document.getElementById('imgUpload') || document.createElement('input');
   elFile.setAttribute('type', 'file');
   elFile.style.display = 'none';
-  elFile.addEventListener("change", getFile);
+
+  // Avoid double-binding if #imgUpload exists and already has listeners.
+  let bound = false;
+
+  function bindIfNeeded() {
+    if (bound) return;
+    bound = true;
+    elFile.addEventListener('change', getFile);
+  }
 
   function getFile() {
 
-    if (this.files.length == 0) {
-  
+    if (!this.files || this.files.length === 0) {
       return;
     }
+
     let file = this.files[0];
     let reader = new FileReader();
 
     reader.addEventListener('load', () => {
       puzzle.srcImage.src = reader.result;
     });
-    reader.readAsDataURL(this.files[0]);
 
+    reader.readAsDataURL(file);
   }
 
-  loadFile = function (ooptions) {
-    elFile.setAttribute("accept", "image/*");
-    elFile.value = null; 
-    elFile.click();
+  loadFile = function () {
+    bindIfNeeded();
+    elFile.setAttribute('accept', 'image/*');
+    elFile.value = null;
 
-  } 
-} 
+    // If this is a DOM-provided input (center UI), it should already be in the document.
+    // If it's our internal fallback input, we must attach it once.
+    if (!elFile.id && !elFile.isConnected) document.body.appendChild(elFile);
+
+    elFile.click();
+  }
+}
 
 function loadInitialFile() {
   puzzle.srcImage.src = "/assets/images/JigsawPuzzle.jpg";
@@ -1215,45 +1229,170 @@ let events = [];
 } 
 
 let menu = (function () {
+  const menuRoot = document.querySelector('#menu');
+
+  // If there is no #menu (center UI mode), provide a safe no-op menu.
+  if (!menuRoot) {
+    return {
+      items: [],
+      opened: false,
+      open() { this.opened = true; },
+      close() { this.opened = false; }
+    };
+  }
+
   let menu = { items: [] };
-  document.querySelectorAll("#menu li").forEach(menuEl => {
+
+  document.querySelectorAll('#menu li').forEach(menuEl => {
     let kItem = menu.items.length;
     let item = { element: menuEl, kItem: kItem };
     menu.items[kItem] = item;
-
   });
 
   menu.open = function () {
-    menu.items.forEach(item => item.element.style.display = "block");
+    menu.items.forEach(item => item.element.style.display = 'block');
     menu.opened = true;
-  }
+  };
+
   menu.close = function () {
     menu.items.forEach((item, k) => {
-      if (k > 0) item.element.style.display = "none"; 
+      if (k > 0) item.element.style.display = 'none';
     });
     menu.opened = false;
+  };
+
+  // Guard: menu needs at least the hamburger element.
+  if (menu.items[0] && menu.items[0].element) {
+    menu.items[0].element.addEventListener('click', () => {
+      if (menu.opened) menu.close(); else menu.open();
+    });
   }
-  menu.items[0].element.addEventListener("click", () => {
-    if (menu.opened) menu.close(); else menu.open()
-  });
-  menu.items[1].element.addEventListener("click", loadInitialFile);
-  menu.items[2].element.addEventListener("click", loadFile);
-  menu.items[3].element.addEventListener("click", () => { });
+
+  // Existing menu actions (legacy mode)
+  if (menu.items[1] && menu.items[1].element) menu.items[1].element.addEventListener('click', loadInitialFile);
+  if (menu.items[2] && menu.items[2].element) menu.items[2].element.addEventListener('click', loadFile);
+
+  // Shape select is read directly via #shape in Puzzle.create(); no click handler needed.
+
   for (let k = 4; k < menu.items.length; ++k) {
-    menu.items[k].element.addEventListener("click", () => events.push({ event: "nbpieces", nbpieces: [12, 25, 50, 100, 200][k - 4] }));
+    menu.items[k].element.addEventListener('click', () => {
+      events.push({ event: 'nbpieces', nbpieces: [12, 25, 50, 100, 200][k - 4] });
+    });
   }
+
   return menu;
 })();
 
-menu.close();
+// --- Center UI mode (no menu) ---
+(function setupCenterUI() {
+  const centerUI = document.getElementById('centerUI');
+  if (!centerUI) return; // legacy menu page
 
-window.addEventListener("resize", event => {
-  if (events.length && events[events.length - 1].event == "resize") return;;
-  events.push({ event: "resize" });
+  const stepUpload = document.getElementById('stepUpload');
+  const stepOptions = document.getElementById('stepOptions');
+
+  const imgUpload = document.getElementById('imgUpload');
+  const startBtn = document.getElementById('startBtn');
+  const changeImgBtn = document.getElementById('changeImgBtn');
+
+  const shapeSelect = document.getElementById('shape');
+  const shapeChips = document.getElementById('shapeChips');
+  const piecesChips = document.getElementById('piecesChips');
+
+  let selectedPieces = 100;
+
+  function setActive(container, attr, value) {
+    if (!container) return;
+    container.querySelectorAll('.chip').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute(attr) == String(value));
+    });
+  }
+
+  // Defaults
+  setActive(piecesChips, 'data-pieces', selectedPieces);
+
+  if (shapeChips && shapeSelect) {
+    const map = { classic: '1', triangle: '2', round: '3', straight: '4' };
+    shapeChips.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      const key = btn.dataset.shape;
+      if (map[key]) shapeSelect.value = map[key];
+      setActive(shapeChips, 'data-shape', key);
+    });
+  }
+
+  if (piecesChips) {
+    piecesChips.addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip');
+      if (!btn) return;
+      selectedPieces = parseInt(btn.dataset.pieces, 10);
+      setActive(piecesChips, 'data-pieces', selectedPieces);
+    });
+  }
+
+  if (imgUpload) {
+    imgUpload.addEventListener('change', function () {
+      if (!this.files || this.files.length === 0) return;
+
+      const file = this.files[0];
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        puzzle.srcImage.src = reader.result; // triggers imageLoaded()
+      });
+      reader.readAsDataURL(file);
+
+      if (stepUpload) stepUpload.style.display = 'none';
+      if (stepOptions) stepOptions.style.display = 'block';
+    });
+  }
+
+  if (changeImgBtn) {
+    changeImgBtn.addEventListener('click', () => {
+      // Reset UI
+      if (imgUpload) imgUpload.value = '';
+      if (stepOptions) stepOptions.style.display = 'none';
+      if (stepUpload) stepUpload.style.display = 'block';
+
+      // Reset puzzle state
+      puzzle.imageLoaded = false;
+      puzzle.container.innerHTML = '';
+      events.push({ event: 'reset' });
+
+      // Show UI again if it was hidden
+      centerUI.style.display = '';
+    });
+  }
+
+  if (startBtn) {
+    startBtn.addEventListener('click', () => {
+      // Must have an image loaded
+      if (!puzzle.imageLoaded) return;
+
+      // Hide UI and start
+      centerUI.style.display = 'none';
+      events.push({ event: 'nbpieces', nbpieces: selectedPieces });
+    });
+  }
+})();
+
+// In legacy menu mode, collapse menu by default.
+if (document.querySelector('#menu')) {
+  menu.close();
+}
+
+window.addEventListener('resize', event => {
+  if (events.length && events[events.length - 1].event == 'resize') return;
+  events.push({ event: 'resize' });
 });
 
-puzzle = new Puzzle({ container: "forPuzzle" });
-autoStart = isMiniature(); 
+puzzle = new Puzzle({ container: 'forPuzzle' });
+autoStart = isMiniature();
 
-loadInitialFile();
+// If center UI exists, we wait for the user to upload.
+// Otherwise, keep legacy behavior (load default image on start).
+if (!document.getElementById('centerUI')) {
+  loadInitialFile();
+}
+
 requestAnimationFrame(animate);
