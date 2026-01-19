@@ -16,16 +16,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="forPuzzle"></div>
+    
 
-    <!-- Center-screen Maker UI (no menu) -->
-    <div id="centerUI" class="centerUI">
+<div id="forPuzzle"></div>
+
+<!-- Center-screen Maker UI (no menu) -->
+<div id="centerUI" class="centerUI">
   <!-- Step 1: Upload -->
   <div id="stepUpload" class="panel">
     <h2>Upload image</h2>
     <label class="btn" for="imgUpload">Choose image</label>
     <input id="imgUpload" type="file" accept="image/*" hidden />
-    <p class="hint">Sau khi chọn ảnh, sẽ hiện lựa chọn shape & số mảnh.</p>
+    <p class="hint">After selecting the image, you will see options for shape and number of pieces.</p>
   </div>
 
   <!-- Step 2: Options -->
@@ -34,7 +36,6 @@
 
     <div class="row">
       <div class="label">Shape</div>
-      <!-- Hidden select used by the puzzle engine -->
       <select id="shape" aria-label="shape" style="display:none;">
         <option value="1" selected>classic</option>
         <option value="2">triangle</option>
@@ -58,6 +59,7 @@
         <button type="button" class="chip" data-pieces="50">50</button>
         <button type="button" class="chip" data-pieces="100">100</button>
         <button type="button" class="chip" data-pieces="200">200</button>
+        <button type="button" class="chip" data-pieces="300">300</button>
       </div>
     </div>
 
@@ -67,6 +69,7 @@
     </div>
   </div>
 </div>
+
 
     <script src="script.js"></script>
 </body>
