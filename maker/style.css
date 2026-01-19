@@ -1,61 +1,74 @@
-body {
-    font-family: Arial, Helvetica, "Liberation Sans", FreeSans, sans-serif;
-    background-color: #fff1e7;
-    margin: 0;
-    padding: 0;
-    border-width: 0;
-    cursor: pointer;
-  }
+/* =========================
+   Puzzle Maker - Fixed Playground (WP safe)
+   ========================= */
 
-  #menu {
-    position: relative;
-    list-style-type: none;
-    padding-left: 5px;
-    z-index: 1000;
-    /* 1 */
-    display: inline-block;
-    text-align: center;
-  }
+:root{
+  --pm-header-h: 90px;     /* tăng 84/96/110 nếu header cao hơn */
+  --pm-maxw: 1400px;       /* đổi 0 hoặc none nếu muốn full width */
+}
 
-  #menu li {
-    margin: 2px;
-    padding: 4px 10px;
-    border-radius: 5px;
-    background-color: #ff750b;
-  }
+html, body{
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;        /* ✅ tắt scroll trắng */
+}
 
-  #menu li:hover {
-    background-color: #ffecdb;
-  }
+body{
+  font-family: Arial, Helvetica, "Liberation Sans", FreeSans, sans-serif;
+  background-color: #fff1e7;
+  border-width: 0;
+  cursor: pointer;
+}
 
-  #forPuzzle {
-    position: absolute;
-    width: 95vw;
-    height: 95vh;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: #fff1e7;
+/* ✅ BỎ menu (vì maker mới không dùng) */
+#menu{ display:none !important; }
+
+/* ✅ PLAYGROUND cố định dưới header */
+#forPuzzle{
+  position: relative !important;
+    width: 100% !important;
+    min-height: calc(100vh - 90px);
+    background: #fff1e7;
     overflow: hidden;
-  }
+    max-width: 1400px;
+    margin: 0 auto;
+}
 
-  .polypiece {
-    display: block;
-    overflow: hidden;
-    position: absolute;
-  }
+/* nếu muốn full width hoàn toàn, bật cái này:
+:root{ --pm-maxw: none; }
+*/
 
-  .moving {
-    transition-property: top, left;
-    transition-duration: 1s;
-    transition-timing-function: linear;
-  }
+/* ✅ tránh theme làm canvas inline */
+#forPuzzle canvas{
+  display: block !important;
+}
 
-  .gameCanvas {
-    display: none;
-    overflow: hidden;
-    position: absolute;
-  }
+/* header WP giữ trên cùng (nếu sticky/fixed vẫn ok) */
+.site-header, header{
+  position: relative;
+  z-index: 9999;
+}
+
+/* ===== pieces ===== */
+.polypiece{
+  display: block;
+  overflow: hidden;
+  position: absolute;
+}
+
+.moving{
+  transition-property: top, left;
+  transition-duration: 1s;
+  transition-timing-function: linear;
+}
+
+.gameCanvas{
+  display: none;
+  overflow: hidden;
+  position: absolute;
+}
+
+/* ===== Center UI ===== */
 .centerUI{
   position: fixed;
   inset: 0;
@@ -63,7 +76,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none; /* chặn click ngoài panel */
+  pointer-events: none;
 }
 
 .panel{
@@ -76,7 +89,11 @@ body {
   text-align: center;
 }
 
-.hint{ margin: 10px 0 0; font-size: 13px; opacity: .75; }
+.hint{
+  margin: 10px 0 0;
+  font-size: 13px;
+  opacity: .75;
+}
 
 .btn{
   display: inline-block;
@@ -104,32 +121,14 @@ body {
   gap: 8px;
 }
 
+/* ===== Shape/Pieces chips ===== */
 .chip{
   border: 1px solid rgba(0,0,0,.18);
   background: #fff;
   padding: 8px 10px;
   border-radius: 999px;
   cursor: pointer;
-}
-
-.chip.active{
-  border-color: rgba(0,0,0,.35);
-  box-shadow: 0 6px 18px rgba(0,0,0,.12);
-}
-
-.actions{
-  margin-top: 16px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-/* =========================
-   Hover & Active for Shape / Pieces buttons
-   ========================= */
-
-/* trạng thái mặc định */
-.chip{
-  transition: 
+  transition:
     background-color .18s ease,
     color .18s ease,
     border-color .18s ease,
@@ -137,16 +136,14 @@ body {
     transform .12s ease;
 }
 
-/* hover */
 .chip:hover{
-  background: #ff750b;   /* màu cam chủ đạo */
+  background: #ff750b;
   color: #fff;
   border-color: #ff750b;
   box-shadow: 0 8px 18px rgba(255,117,11,.35);
   transform: translateY(-1px);
 }
 
-/* đang được chọn */
 .chip.active{
   background: #ff750b;
   color: #fff;
@@ -154,16 +151,21 @@ body {
   box-shadow: 0 10px 24px rgba(255,117,11,.45);
 }
 
-/* hover trên item đang active (đậm hơn nhẹ) */
 .chip.active:hover{
   background: #ff5e00;
   border-color: #ff5e00;
 }
 
-/* mobile: bỏ hiệu ứng nâng */
 @media (hover: none){
   .chip:hover{
     transform: none;
     box-shadow: none;
   }
+}
+
+.actions{
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
