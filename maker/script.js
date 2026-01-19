@@ -1076,7 +1076,8 @@ let events = [];
 
 
       case 15:
-        if (autoStart) event = { event: "nbpieces", nbpieces: 12 }; 
+        // Auto-start should use the same default as the UI (300 pieces)
+        if (autoStart) event = { event: "nbpieces", nbpieces: 300 }; 
         autoStart = false; 
         if (!event) return;
         if (event.event == "nbpieces") {
@@ -1276,7 +1277,8 @@ let menu = (function () {
 
   for (let k = 4; k < menu.items.length; ++k) {
     menu.items[k].element.addEventListener('click', () => {
-      events.push({ event: 'nbpieces', nbpieces: [12, 25, 50, 100, 200][k - 4] });
+      // Legacy menu: include 300 pieces as an option if the menu has that item
+      events.push({ event: 'nbpieces', nbpieces: [12, 25, 50, 100, 200, 300][k - 4] });
     });
   }
 
@@ -1301,7 +1303,7 @@ let menu = (function () {
 
   // Defaults (match the hidden <select id="shape"> in index.html)
   let selectedShapeKey = 'classic';
-  let selectedPieces = 100;
+  let selectedPieces = 300;
 
   function setActive(container, attr, value) {
     if (!container) return;
